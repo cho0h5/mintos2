@@ -3,21 +3,45 @@
 
 SECTION .text
 
-mov ax, 0xB800
-mov ds, ax
+jmp 0x07C0:START
 
-mov byte [ 0x00 ], 'A'
-mov byte [ 0x01 ], 0x4A
-mov byte [ 0x02 ], 'B'
-mov byte [ 0x03 ], 0x4A
-mov byte [ 0x04 ], 'C'
-mov byte [ 0x05 ], 0x4A
-mov byte [ 0x06 ], 'D'
-mov byte [ 0x07 ], 0x4A
-mov byte [ 0x80 ], 'D'
-mov byte [ 0x81 ], 0x4A
+START:
+	mov ax, 0x07C0
+	mov ds, ax
 
-jmp $
+	mov ax, 0xB800
+	mov es, ax
+
+	mov si, 0
+
+.SCREENCLEARLOOP:
+	mov byte [ es: si ], 0
+	mov byte [ es: si + 1], 0x0A
+
+	add si, 2
+	cmp si, 80 * 25 * 2
+	jl .SCREENCLEARLOOP
+
+	mov si, 0
+	mov di, 0
+
+.MESSAGELOOP:
+	mov cl, byte [ si + MESSAGE1 ]
+
+	cmp cl, 0
+	je .MESSAGEEND
+
+	mov byte [ es: di ], cl
+
+	add si, 1
+	add di, 2
+
+	jmp .MESSAGELOOP
+.MESSAGEEND:
+
+	jmp $
+
+MESSAGE1:	db "MINT64 OS Boot Loader Start~!!", 0
 
 times 510 - ( $ - $$ ) db 0x00
 
